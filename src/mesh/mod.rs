@@ -1,10 +1,40 @@
-use gl::types::GLsizei;
-use gl::types::GLsizeiptr;
+use gl::types::{ GLsizei, GLsizeiptr };
 use cgmath::{ Vector2, Vector3 };
 
+/// Represent a vertex.
+pub struct Vertex<V: num::Num, U: num::Num> {
+    /// The vertex position.
+    position: Vector3<V>,
+
+    /// The vertex uv coordinates.
+    uv: Vector2<U>,
+}
+
+impl<V: num::Num, U: num::Num> Vertex<V, U> {
+    /// Create new Vertex.
+    /// 
+    /// # Arguments
+    /// * `position` - The vertex position.
+    /// * `uv` - The vertex uv coordinates.
+    pub fn new(position: Vector3<V>, uv: Vector2<U>) -> Vertex<V, U> {
+        Vertex {
+            position: position,
+            uv: uv,
+        }
+    }
+}
+
+impl<V: num::Num + Copy, U: num::Num + Copy> std::clone::Clone for Vertex<V, U> {
+    fn clone(&self) -> Self {
+        Vertex {
+            position: self.position,
+            uv: self.uv,
+        }
+    }
+}
+
 pub struct Mesh<V: num::Num, U: num::Num, I: num::Integer> {
-    pub vertices : Vec<Vector3<V>>,
-    pub uvs      : Vec<Vector2<U>>,
+    pub vertices : Vec<Vertex<V, U>>,
     pub indices  : Vec<Vector3<I>>,
     vbo: u32,
     vao: u32,
@@ -12,11 +42,10 @@ pub struct Mesh<V: num::Num, U: num::Num, I: num::Integer> {
 }
 
 impl<V: num::Num, U: num::Num, I: num::Integer> Mesh<V, U, I> {
-    pub fn new(vertices : Vec<Vector3<V>>, uvs: Vec<Vector2<U>>, indices: Vec<Vector3<I>>, is_dynamic: bool) -> Mesh<V, U, I> {
+    pub fn new(vertices : Vec<Vertex<V, U>>, indices: Vec<Vector3<I>>, is_dynamic: bool) -> Mesh<V, U, I> {
         let mut mesh = Mesh {
             vertices : vertices,
             indices  : indices,
-            uvs      : uvs,
             vbo: 0,
             vao: 0,
             ebo: 0,
@@ -29,11 +58,12 @@ impl<V: num::Num, U: num::Num, I: num::Integer> Mesh<V, U, I> {
     pub fn draw(&self) {
         unsafe {
             gl::BindVertexArray(self.vao);
-            gl::DrawElements(gl::TRIANGLES, self.indices.len() as i32 * 3, gl::UNSIGNED_BYTE, std::ptr::null());
+            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_BYTE, std::ptr::null());
         }
     }
 
     unsafe fn init_buffers(&mut self, is_dynamic: bool) {
+        
         gl::GenVertexArrays(1, &mut self.vao);
         gl::GenBuffers(1, &mut self.vbo);
         gl::GenBuffers(1, &mut self.ebo);
@@ -41,19 +71,16 @@ impl<V: num::Num, U: num::Num, I: num::Integer> Mesh<V, U, I> {
         gl::BindVertexArray(self.vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, self.vbo);
 
-        let v_buff_size = self.v_buff_size();
-        let u_buff_size = self.u_buff_size();
         let i_buff_size = self.i_buff_size();
-        let buff_size = v_buff_size + u_buff_size;
+        let buff_size = self.vertices.len() * std::mem::size_of::<Vertex<V, U>>();
         let draw_mode = if is_dynamic { gl::DYNAMIC_DRAW } else { gl::STATIC_DRAW };
 
         let v_size = std::mem::size_of::<Vector3<V>>();
         let u_size = std::mem::size_of::<Vector2<U>>();
         let stride = (v_size + u_size) as GLsizei;
 
-        gl::BufferData(gl::ARRAY_BUFFER, buff_size, std::ptr::null(), draw_mode);
-        gl::BufferSubData(gl::ARRAY_BUFFER, 0, v_buff_size, &self.vertices[0] as *const Vector3::<V> as *const gl::types::GLvoid);
-        gl::BufferSubData(gl::ARRAY_BUFFER, v_buff_size, u_buff_size, &self.uvs[0] as *const Vector2::<U> as *const gl::types::GLvoid);
+        gl::BufferData(gl::ARRAY_BUFFER, buff_size as isize, std::ptr::null(), draw_mode);
+        gl::BufferSubData(gl::ARRAY_BUFFER, 0, buff_size as isize, &self.vertices[0] as *const Vertex::<V, U> as *const gl::types::GLvoid);
 
         gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.ebo);
         gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, i_buff_size, &self.indices[0] as *const Vector3::<I> as *const gl::types::GLvoid, draw_mode);
@@ -68,18 +95,8 @@ impl<V: num::Num, U: num::Num, I: num::Integer> Mesh<V, U, I> {
         gl::BindVertexArray(0);
     }
 
-    /// The vertex buffer size.
-    fn v_buff_size(&self) -> GLsizeiptr {
-        (self.vertices.len() * std::mem::size_of::<Vector3::<V>>()) as GLsizeiptr
-    }
-
     /// The index buffer size.
     fn i_buff_size(&self) -> GLsizeiptr {
         (self.indices.len() * std::mem::size_of::<Vector3::<I>>()) as GLsizeiptr
-    }
-
-    /// The uv buffer size.
-    fn u_buff_size(&self) -> GLsizeiptr {
-        (self.uvs.len() * std::mem::size_of::<Vector2::<U>>()) as GLsizeiptr
     }
 }
