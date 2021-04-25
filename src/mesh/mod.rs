@@ -2,12 +2,46 @@ use crate::Vertex;
 use gl::types::{ GLsizei, GLsizeiptr };
 use cgmath::{ Vector2, Vector3 };
 
+pub struct FSQ;
+
+impl FSQ {
+    pub fn new() -> FSQ {
+        FSQ {}
+    }
+}
+
+pub trait Object2D<V: num::Num, U: num::Num, I: num::Integer> {
+    fn build_mesh(&self) -> Mesh<V, U, I>;
+}
+
 pub struct Mesh<V: num::Num, U: num::Num, I: num::Integer> {
     pub vertices : Vec<Vertex<V, U>>,
     pub indices  : Vec<Vector3<I>>,
     vbo: u32,
     vao: u32,
     ebo: u32,
+}
+
+impl Object2D<f32, f32, u8> for FSQ {
+    fn build_mesh(&self) -> Mesh::<f32, f32, u8> {
+        // Create a full screen quad (FSQ)
+        // The vertices and uvs of our fsq...
+        let vertices: Vec<Vertex<f32, f32>> = [
+            Vertex::new(Vector3::new(-1.0, -1.0, 0.0), Vector2::new(0.0, 0.0)),
+            Vertex::new(Vector3::new(-1.0,  1.0, 0.0), Vector2::new(0.0, 1.0)),
+            Vertex::new(Vector3::new( 1.0,  1.0, 0.0), Vector2::new(1.0, 1.0)),
+            Vertex::new(Vector3::new( 1.0, -1.0, 0.0), Vector2::new(1.0, 0.0)),
+        ].to_vec();
+
+        // The indices of our fsq geometry.
+        let indices: Vec<Vector3<u8>> = [
+            Vector3::new(0, 1, 2),
+            Vector3::new(0, 2, 3),
+        ].to_vec();
+        
+        // Build our fsq mesh from the vertices and indices...
+        Mesh::<f32, f32, u8>::new(vertices, indices, false)
+    }
 }
 
 impl<V: num::Num, U: num::Num, I: num::Integer> Mesh<V, U, I> {

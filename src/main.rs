@@ -6,7 +6,10 @@ extern crate glfw;
 mod mesh;
 mod vertex;
 mod shader;
+mod ants;
 
+use crate::mesh::Object2D;
+use crate::mesh::FSQ;
 use self::glfw::{ Context, Key, Action };
 use cgmath::{ Vector2, Vector3, Matrix4, prelude::*};
 
@@ -49,23 +52,25 @@ pub fn main() {
         Err(e)  => panic!("{}", e.message),
     };
 
-    // Create a full screen quad (FSQ)
-    // The vertices and uvs of our fsq...
-    let vertices: Vec<Vertex<f32, f32>> = [
-        Vertex::new(Vector3::new(-1.0, -1.0, 0.0), Vector2::new(0.0, 0.0)),
-        Vertex::new(Vector3::new(-1.0,  1.0, 0.0), Vector2::new(0.0, 1.0)),
-        Vertex::new(Vector3::new( 1.0,  1.0, 0.0), Vector2::new(1.0, 1.0)),
-        Vertex::new(Vector3::new( 1.0, -1.0, 0.0), Vector2::new(1.0, 0.0)),
-    ].to_vec();
+    let mesh = FSQ::new().build_mesh();
 
-    // The indices of our fsq geometry.
-    let indices: Vec<Vector3<u8>> = [
-        Vector3::new(0, 1, 2),
-        Vector3::new(0, 2, 3),
-    ].to_vec();
+    // // Create a full screen quad (FSQ)
+    // // The vertices and uvs of our fsq...
+    // let vertices: Vec<Vertex<f32, f32>> = [
+    //     Vertex::new(Vector3::new(-1.0, -1.0, 0.0), Vector2::new(0.0, 0.0)),
+    //     Vertex::new(Vector3::new(-1.0,  1.0, 0.0), Vector2::new(0.0, 1.0)),
+    //     Vertex::new(Vector3::new( 1.0,  1.0, 0.0), Vector2::new(1.0, 1.0)),
+    //     Vertex::new(Vector3::new( 1.0, -1.0, 0.0), Vector2::new(1.0, 0.0)),
+    // ].to_vec();
+
+    // // The indices of our fsq geometry.
+    // let indices: Vec<Vector3<u8>> = [
+    //     Vector3::new(0, 1, 2),
+    //     Vector3::new(0, 2, 3),
+    // ].to_vec();
     
-    // Build our fsq mesh from the vertices and indices...
-    let mesh = Mesh::<f32, f32, u8>::new(vertices, indices, false);
+    // // Build our fsq mesh from the vertices and indices...
+    // let mesh = Mesh::<f32, f32, u8>::new(vertices, indices, false);
 
     // Render loop...
     while !window.should_close() {
