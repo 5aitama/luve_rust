@@ -3,10 +3,10 @@ use cgmath::{Vector2, Vector3};
 /// Represent a vertex.
 pub struct Vertex<V: num::Num, U: num::Num> {
     /// The vertex position.
-    position: Vector3<V>,
+    pub position: Vector3<V>,
 
     /// The vertex uv coordinates.
-    uv: Vector2<U>,
+    pub uv: Vector2<U>,
 }
 
 impl<V: num::Num, U: num::Num> Vertex<V, U> {

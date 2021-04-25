@@ -9,9 +9,8 @@ mod shader;
 mod ants;
 
 use crate::mesh::Object2D;
-use crate::mesh::FSQ;
 use self::glfw::{ Context, Key, Action };
-use cgmath::{ Vector2, Vector3, Matrix4, prelude::*};
+use cgmath::{ Vector2, Matrix4, prelude::*};
 
 use mesh::Mesh;
 use vertex::Vertex;
@@ -52,25 +51,11 @@ pub fn main() {
         Err(e)  => panic!("{}", e.message),
     };
 
-    let mesh = FSQ::new().build_mesh();
+    let circle_mesh = ants::ant::Circle::new(64, 800.).build_mesh();
 
-    // // Create a full screen quad (FSQ)
-    // // The vertices and uvs of our fsq...
-    // let vertices: Vec<Vertex<f32, f32>> = [
-    //     Vertex::new(Vector3::new(-1.0, -1.0, 0.0), Vector2::new(0.0, 0.0)),
-    //     Vertex::new(Vector3::new(-1.0,  1.0, 0.0), Vector2::new(0.0, 1.0)),
-    //     Vertex::new(Vector3::new( 1.0,  1.0, 0.0), Vector2::new(1.0, 1.0)),
-    //     Vertex::new(Vector3::new( 1.0, -1.0, 0.0), Vector2::new(1.0, 0.0)),
-    // ].to_vec();
-
-    // // The indices of our fsq geometry.
-    // let indices: Vec<Vector3<u8>> = [
-    //     Vector3::new(0, 1, 2),
-    //     Vector3::new(0, 2, 3),
-    // ].to_vec();
-    
-    // // Build our fsq mesh from the vertices and indices...
-    // let mesh = Mesh::<f32, f32, u8>::new(vertices, indices, false);
+    unsafe {
+        gl::FrontFace(gl::CW);
+    }
 
     // Render loop...
     while !window.should_close() {
@@ -87,7 +72,7 @@ pub fn main() {
 
             let (width, height) = window.get_framebuffer_size();
 
-            let projection_matrix = Matrix4::<f32>::identity(); //cgmath::ortho(-width as f32, width as f32, -height as f32, height as f32, -10.0, 10.0);
+            let projection_matrix = cgmath::ortho(-width as f32, width as f32, -height as f32, height as f32, -10.0, 10.0);
             shader.set_matrix4("projection", &projection_matrix, false);
 
             let transform_matrix = Matrix4::<f32>::identity();
@@ -100,7 +85,8 @@ pub fn main() {
             shader.set_vec2("iResolution", &[Vector2::<f32>::new(width as f32, height as f32)]);
 
             // Render our FSQ to the screen !
-            mesh.draw();
+            // mesh.draw();
+            circle_mesh.draw();
         }
 
         window.swap_buffers();

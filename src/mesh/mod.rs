@@ -61,7 +61,7 @@ impl<V: num::Num, U: num::Num, I: num::Integer> Mesh<V, U, I> {
     pub fn draw(&self) {
         unsafe {
             gl::BindVertexArray(self.vao);
-            gl::DrawElements(gl::TRIANGLES, 6, gl::UNSIGNED_BYTE, std::ptr::null());
+            gl::DrawElements(gl::TRIANGLES, self.indices.len() as i32 * 3, gl::UNSIGNED_BYTE, std::ptr::null());
         }
     }
 
