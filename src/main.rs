@@ -6,11 +6,16 @@ extern crate glfw;
 mod mesh;
 mod vertex;
 mod shader;
-mod ants;
+mod ants_algorithm;
+mod circle;
+
+use ants_algorithm::{ ant::Ant, city::City, map::Map };
+use circle::Circle;
 
 use crate::mesh::Object2D;
 use self::glfw::{ Context, Key, Action };
 use cgmath::{ Vector2, Matrix4, prelude::*};
+use rand::Rng;
 
 use mesh::Mesh;
 use vertex::Vertex;
@@ -21,35 +26,39 @@ use std::sync::mpsc::Receiver;
 const WINDOW_W: u32 = 800;
 const WINDOW_H: u32 = 600;
 
-fn calculate_distances(of: &ants::ant::Ant, from: &[ants::ant::City]) -> Vec<f32> {
-
-    let mut distances = Vec::<f32>::with_capacity(from.len());
-
-    for i in 0..from.len() {
-        let distance = (from[i].position - of.position).magnitude();
-        distances.push(distance);
-    }
-
-    distances
-}
-
 pub fn main() {
 
-    let ant = ants::ant::Ant::new(Vector2::new(0.0, 0.0));
+    // Create new map with cities...
+    let mut map = Map::new(&[
+        City::new(Vector2::new(1.0,  0.0)),
+        City::new(Vector2::new(1.0,  1.0)),
+        City::new(Vector2::new(1.5,  0.0)),
+        City::new(Vector2::new(0.0, -1.0)),
+    ]);
 
-    let cities = [
-        ants::ant::City::new(Vector2::new(1.0,  0.0)),
-        ants::ant::City::new(Vector2::new(1.0,  1.0)),
-        ants::ant::City::new(Vector2::new(1.5,  0.0)),
-        ants::ant::City::new(Vector2::new(0.0, -1.0)),
-    ];
+    // Generate ants (one per city)
+    let mut ants = Vec::new();
 
-    let distances = calculate_distances(&ant, &cities);
-
-    for d in distances {
-        println!("distance: {}", d);
+    for i in 0..map.cities.len() {
+        ants.push(Ant::new(i));
     }
-    
+
+    // Spawn 100 x 4 ants to explore the map
+    for _ in 0..100 {
+        for i in 0..ants.len() { 
+            ants[i].explore_map(&mut map) 
+        }
+    }
+
+    // Retrieve the best path from the first city (at index 0)
+    let best_path = map.best_path(0);
+
+    // Print the result !!
+    print!("Path : ");
+    for i in 0..best_path.len() {
+        print!("city {}{}", best_path[i], if i < best_path.len() - 1 { " to " } else {"\n"})
+    }
+
     // Initialize GLFW...
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
     glfw.window_hint(glfw::WindowHint::ContextVersion(4, 1));
@@ -78,7 +87,7 @@ pub fn main() {
         Err(e)  => panic!("{}", e.message),
     };
 
-    let circle_mesh = ants::ant::Circle::new(64, 800.).build_mesh();
+    let circle_mesh = Circle::new(64, 800.).build_mesh();
 
     unsafe {
         gl::FrontFace(gl::CW);

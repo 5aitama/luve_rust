@@ -1,32 +1,7 @@
-
-use cgmath::Vector3;
+use cgmath::{Vector3, Vector2};
 use crate::Vertex;
 use crate::Mesh;
 use crate::Object2D;
-
-use cgmath::Vector2;
-
-/// Represent a simple Ant!
-pub struct Ant {
-    /// The ant position (in 2D space)
-    pub position: Vector2<f32>,
-}
-
-impl Ant {
-    pub fn new(position: Vector2::<f32>) -> Ant {
-        Ant { position: position }
-    }
-}
-
-pub struct City {
-    pub position: Vector2<f32>,
-}
-
-impl City {
-    pub fn new(position: Vector2::<f32>) -> City {
-        City { position: position }
-    }
-}
 
 pub struct Circle {
     resolution: u8,
