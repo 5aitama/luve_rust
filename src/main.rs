@@ -21,8 +21,34 @@ use std::sync::mpsc::Receiver;
 const WINDOW_W: u32 = 800;
 const WINDOW_H: u32 = 600;
 
+fn calculate_distances(of: &ants::ant::Ant, from: &[ants::ant::City]) -> Vec<f32> {
+
+    let mut distances = Vec::<f32>::with_capacity(from.len());
+
+    for i in 0..from.len() {
+        let distance = (from[i].position - of.position).magnitude();
+        distances.push(distance);
+    }
+
+    distances
+}
+
 pub fn main() {
-    
+
+    let ant = ants::ant::Ant::new(Vector2::new(0.0, 0.0));
+
+    let cities = [
+        ants::ant::City::new(Vector2::new(1.0,  0.0)),
+        ants::ant::City::new(Vector2::new(1.0,  1.0)),
+        ants::ant::City::new(Vector2::new(1.5,  0.0)),
+        ants::ant::City::new(Vector2::new(0.0, -1.0)),
+    ];
+
+    let distances = calculate_distances(&ant, &cities);
+
+    for d in distances {
+        println!("distance: {}", d);
+    }
     
     // Initialize GLFW...
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();

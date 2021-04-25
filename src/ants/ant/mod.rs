@@ -4,18 +4,28 @@ use crate::Vertex;
 use crate::Mesh;
 use crate::Object2D;
 
-use cgmath::Deg;
 use cgmath::Vector2;
 
 /// Represent a simple Ant!
 pub struct Ant {
-
     /// The ant position (in 2D space)
-    position: Vector2<f32>,
+    pub position: Vector2<f32>,
+}
 
-    // The ant orientation (in degree)
-    orientation: Deg<f32>,
+impl Ant {
+    pub fn new(position: Vector2::<f32>) -> Ant {
+        Ant { position: position }
+    }
+}
 
+pub struct City {
+    pub position: Vector2<f32>,
+}
+
+impl City {
+    pub fn new(position: Vector2::<f32>) -> City {
+        City { position: position }
+    }
 }
 
 pub struct Circle {
