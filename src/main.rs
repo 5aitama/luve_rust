@@ -23,6 +23,7 @@ const WINDOW_H: u32 = 600;
 
 pub fn main() {
     
+    
     // Initialize GLFW...
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
     glfw.window_hint(glfw::WindowHint::ContextVersion(4, 1));
