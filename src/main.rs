@@ -3,16 +3,16 @@
 extern crate gl;
 extern crate glfw;
 
-use self::glfw::{ Context, Key, Action };
+mod mesh;
+mod vertex;
+mod shader;
 
-use crate::mesh::Vertex;
+use self::glfw::{ Context, Key, Action };
 use cgmath::{ Vector2, Vector3, Matrix4, prelude::*};
 
-mod shader;
-use shader::Shader;
-
-mod mesh;
 use mesh::Mesh;
+use vertex::Vertex;
+use shader::Shader;
 
 use std::sync::mpsc::Receiver;
 
