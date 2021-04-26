@@ -1,4 +1,4 @@
-use crate::Vertex;
+use crate::vertex::Vertex;
 use gl::types::{ GLsizei, GLsizeiptr };
 use cgmath::{ Vector2, Vector3 };
 

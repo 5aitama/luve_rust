@@ -1,6 +1,6 @@
 
-use crate::ants_algorithm::map::Map as AntMap;
-use crate::City;
+use crate::map::Map as AntMap;
+use crate::city::City;
 use cgmath::prelude::*;
 use rand::Rng;
 
