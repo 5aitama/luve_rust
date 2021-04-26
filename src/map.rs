@@ -10,11 +10,13 @@ impl Map {
         let mut pheromones = Vec::new();
 
         for _ in 0..cities.len() {
-            let mut a = Vec::new();
+            let mut paths = Vec::new();
+            
             for _ in 0..cities.len() {
-                a.push(0usize)
+                paths.push(1usize)
             }
-            pheromones.push(a);
+
+            pheromones.push(paths);
         }
 
         Map {

@@ -1,110 +1,81 @@
 //! My crate opengl_rs is awesome
 
 extern crate gl;
-extern crate glfw;
 
-use self::glfw::{Action, Context, Key};
+use std::f32::consts::PI;
+use cgmath::Vector3;
 use cgmath::{prelude::*, Matrix4, Vector2};
-use luve_rust::{circle::Circle, mesh::Object2D, shader::Shader};
-use std::sync::mpsc::Receiver;
-
-const WINDOW_W: u32 = 800;
-const WINDOW_H: u32 = 600;
+use luve_rust::{circle::Circle, mesh::Object2D, shader::Shader, window::Window as RWindow};
 
 pub fn main() {
-    // Initialize GLFW...
-    let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
-    glfw.window_hint(glfw::WindowHint::ContextVersion(4, 1));
-    glfw.window_hint(glfw::WindowHint::OpenGlProfile(
-        glfw::OpenGlProfileHint::Core,
-    ));
-    // Add forward compatible hint for MacOS ...
-    #[cfg(target_os = "macos")]
-    glfw.window_hint(glfw::WindowHint::OpenGlForwardCompat(true));
 
-    // Create our window...
-    let (mut window, events) = glfw
-        .create_window(WINDOW_W, WINDOW_H, "Luve Rust", glfw::WindowMode::Windowed)
-        .expect("Failed to create GLFW Window");
-
-    window.make_current();
-    window.set_key_polling(true);
-    window.set_framebuffer_size_polling(true);
-
-    // Load OpenGL methods...
-    gl::load_with(|symbol| window.get_proc_address(symbol) as *const _);
+    let mut my_window = RWindow::new(800, 600, "Luve Rust");
 
     // Load and compile our shader 🥰
-    let vs = "./shaders/simple.vert";
-    let fs = "./shaders/simple.frag";
-    let shader = match Shader::new(vs, fs) {
+    let shader = match Shader::new("./shaders/simple.vert", "./shaders/simple.frag") {
         Ok(e) => e,
         Err(e) => panic!("{}", e.message),
     };
 
-    let circle_mesh = Circle::new(64, 800.).build_mesh();
+    let circle_mesh = Circle::new(64, 400.0).build_mesh();
 
-    unsafe {
-        gl::FrontFace(gl::CW);
-    }
+    let circle_1 = Circle::new(64, 100.0).build_mesh();
 
-    // Render loop...
-    while !window.should_close() {
-        // Process events, inputs, etc...
-        process_events(&mut window, &events);
+    my_window.start_loop(|my_window| {
 
-        let current_time = glfw.get_time() as f32;
+        shader.use_it();
+        
+        let current_time = my_window.glfw.get_time() as f32;
+        let (width, height) = my_window.raw_window.get_size();
+        let (fwidth, fheight) = my_window.raw_window.get_framebuffer_size();
 
-        unsafe {
-            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-            gl::ClearColor(0.1, 0.1, 0.1, 1.);
+        let projection_matrix = cgmath::ortho(
+            -width  as f32,
+             width  as f32,
+            -height as f32,
+             height as f32,
+            -10.0,
+             10.0,
+        );
+        
+        shader.set_matrix4("projection", &projection_matrix, false);
+        shader.set_float("blendForce", 3.25);
+        shader.set_float("iTime", current_time as f32);
+        shader.set_vec2(
+            "iResolution",
+            &[Vector2::<f32>::new(fwidth as f32, fheight as f32)],
+        );
 
-            gl::UseProgram(shader.get_program());
+        let mut transform_matrix_1 = Matrix4::<f32>::identity();
+        shader.set_matrix4("transform", &transform_matrix_1, false);
+        circle_mesh.draw();
 
-            let (width, height) = window.get_framebuffer_size();
+        let mut x = (current_time + PI / 2.).cos() * 500.;
+        let mut y = (current_time + PI / 2.).sin() * 500.;
 
-            let projection_matrix = cgmath::ortho(
-                -width as f32,
-                width as f32,
-                -height as f32,
-                height as f32,
-                -10.0,
-                10.0,
-            );
-            shader.set_matrix4("projection", &projection_matrix, false);
+        transform_matrix_1 = Matrix4::from_translation(Vector3::new(x, y, 0.));
+        shader.set_matrix4("transform", &transform_matrix_1, false);
+        circle_1.draw();
 
-            let transform_matrix = Matrix4::<f32>::identity();
-            // transform_matrix = transform_matrix * Matrix4::<f32>::from_translation(vec3(-0.5, 0.0, 0.0));
-            // transform_matrix = transform_matrix * Matrix4::<f32>::from_angle_z(cgmath::Rad(current_time));
-            shader.set_matrix4("transform", &transform_matrix, false);
+        x = (current_time + PI * 2.).cos() * 500.;
+        y = (current_time + PI * 2.).sin() * 500.;
 
-            shader.set_float("blendForce", 3.25);
-            shader.set_float("iTime", current_time as f32);
-            shader.set_vec2(
-                "iResolution",
-                &[Vector2::<f32>::new(width as f32, height as f32)],
-            );
+        transform_matrix_1 = Matrix4::from_translation(Vector3::new(x, y, 0.));
+        shader.set_matrix4("transform", &transform_matrix_1, false);
+        circle_1.draw();
 
-            // Render our FSQ to the screen !
-            // mesh.draw();
-            circle_mesh.draw();
-        }
+        x = (current_time + PI).cos() * 500.;
+        y = (current_time + PI).sin() * 500.;
 
-        window.swap_buffers();
-        glfw.poll_events();
-    }
-}
+        transform_matrix_1 = Matrix4::from_translation(Vector3::new(x, y, 0.));
+        shader.set_matrix4("transform", &transform_matrix_1, false);
+        circle_1.draw();
 
-fn process_events(window: &mut glfw::Window, events: &Receiver<(f64, glfw::WindowEvent)>) {
-    for (_, event) in glfw::flush_messages(events) {
-        match event {
-            glfw::WindowEvent::FramebufferSize(width, height) => unsafe {
-                gl::Viewport(0, 0, width, height);
-            },
-            glfw::WindowEvent::Key(Key::Escape, _, Action::Press, _) => {
-                window.set_should_close(true)
-            }
-            _ => {}
-        }
-    }
+        x = (current_time + -PI / 2.).cos() * 500.;
+        y = (current_time + -PI / 2.).sin() * 500.;
+
+        transform_matrix_1 = Matrix4::from_translation(Vector3::new(x, y, 0.));
+        shader.set_matrix4("transform", &transform_matrix_1, false);
+        circle_1.draw();
+    });
 }
