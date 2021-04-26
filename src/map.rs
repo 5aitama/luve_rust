@@ -1,5 +1,4 @@
-
-use crate::City;
+use crate::city::City;
 
 pub struct Map {
     pub cities: Vec<City>,
@@ -8,16 +7,17 @@ pub struct Map {
 
 impl Map {
     pub fn new(cities: &[City]) -> Map {
-
         let mut pheromones = Vec::new();
 
         for _ in 0..cities.len() {
             let mut a = Vec::new();
-            for _ in 0..cities.len() { a.push(0usize) }
+            for _ in 0..cities.len() {
+                a.push(0usize)
+            }
             pheromones.push(a);
         }
 
-        Map { 
+        Map {
             cities: cities.to_vec(),
             pheromones: pheromones,
         }
