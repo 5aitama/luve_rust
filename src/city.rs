@@ -12,7 +12,6 @@ impl City {
 }
 
 impl std::clone::Clone for City {
-    
     fn clone(&self) -> Self {
         City { position: self.position }
     }

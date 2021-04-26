@@ -76,6 +76,11 @@ impl Shader {
         self.program
     }
 
+    /// Use the current shader.
+    pub fn use_it(&self) {
+        unsafe { gl::UseProgram(self.get_program()) };
+    }
+
     /// Compile a shader.
     /// 
     /// # Arguments
